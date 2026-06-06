@@ -1,6 +1,6 @@
 name: Sync Upstream
 on:
-  workflow_dispatch:  # 手动触发
+  workflow_dispatch:
 
 jobs:
   sync:
@@ -10,6 +10,11 @@ jobs:
         with:
           ref: main
           fetch-depth: 0
+
+      - name: Configure git
+        run: |
+          git config user.email "6313052@qq.com"
+          git config user.name "hsl001"
 
       - name: Sync upstream
         run: |
