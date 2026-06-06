@@ -2,6 +2,9 @@ name: Sync Upstream
 on:
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   sync:
     runs-on: ubuntu-latest
@@ -10,6 +13,7 @@ jobs:
         with:
           ref: main
           fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Configure git
         run: |
@@ -20,10 +24,17 @@ jobs:
         run: |
           git remote add upstream https://github.com/DHDAXCW/OpenWRT_x86_x64.git
           git fetch upstream
+          # 备份自己的 workflows
+          cp -r .github/workflows /tmp/workflows_backup
+          # 合并上游
           git merge upstream/main --no-edit || {
-            # 冲突时：采用上游版本，丢弃本地改动
             git checkout --theirs immortalwrt/x86_64/defconfig
             git add immortalwrt/x86_64/defconfig
             git commit --no-edit
           }
+          # 恢复自己的 workflows
+          rm -rf .github/workflows
+          cp -r /tmp/workflows_backup .github/workflows
+          git add .github/workflows
+          git diff --cached --quiet || git commit -m "restore own workflows"
           git push
