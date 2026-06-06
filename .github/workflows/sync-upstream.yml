@@ -20,5 +20,10 @@ jobs:
         run: |
           git remote add upstream https://github.com/DHDAXCW/OpenWRT_x86_x64.git
           git fetch upstream
-          git merge upstream/main --no-edit
+          git merge upstream/main --no-edit || {
+            # 冲突时：采用上游版本，丢弃本地改动
+            git checkout --theirs immortalwrt/x86_64/defconfig
+            git add immortalwrt/x86_64/defconfig
+            git commit --no-edit
+          }
           git push
