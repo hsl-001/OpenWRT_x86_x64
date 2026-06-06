@@ -14,7 +14,7 @@ jobs:
       - name: Configure git
         run: |
           git config user.email "6313052@qq.com"
-          git config user.name "hsl001"
+          git config user.name "hsl-001"
 
       - name: Sync upstream
         run: |
