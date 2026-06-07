@@ -62,8 +62,7 @@ jobs:
       run: |
         sudo -E apt-get -qq update
         sudo -E apt-get -qq install build-essential clang flex g++ gawk gcc-multilib gettext \
-        git libncurses5-dev libssl-dev python3-distutils rsync unzip zlib1g-dev swig libpython3-dev aria2 jq subversion qemu-utils ccache rename libelf-dev
-        sudo -E apt-get -qq purge azure-cli ghc* zulu* hhvm llvm* firefox powershell openjdk* dotnet* google* mysql* php* android* speedtest-cli || true
+        git libncurses5-dev libssl-dev python3-setuptools rsync unzip zlib1g-dev swig libpython3-dev aria2 jq subversion qemu-utils ccache rename libelf-dev
         sudo -E apt-get -qq autoremove --purge || true
         sudo -E apt-get -qq clean
         sudo timedatectl set-timezone "$TZ"
@@ -126,7 +125,7 @@ jobs:
 
     - name: Organize and Rename Files
       id: organize
-      if: ${{ env.UPLOAD_FIRMWARE == 'true' && !cancelled() }}
+      if: steps.compile.outputs.status == 'success' && !cancelled()
       run: |
         cd openwrt/bin/targets/x86/64
         rm -rf packages *rootfs.tar.gz *rootfs.img.gz *combined.img.gz *.bin *.config *.buildinfo *.json sha256sums *.manifest
@@ -142,7 +141,7 @@ jobs:
 
     - name: Generate release tags
       id: tag
-      if: env.UPLOAD_RELEASE == 'true' && !cancelled()
+      if: steps.compile.outputs.status == 'success' && env.UPLOAD_RELEASE == 'true' && !cancelled()
       run: |
         echo "release_tag=${{ env.date2 }}" >> $GITHUB_OUTPUT
         touch release.txt
@@ -151,7 +150,7 @@ jobs:
 
     - name: Publish to release
       uses: softprops/action-gh-release@v1
-      if: steps.tag.outputs.status == 'success' && !cancelled()
+      if: steps.compile.outputs.status == 'success' && steps.tag.outputs.status == 'success' && !cancelled()
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
